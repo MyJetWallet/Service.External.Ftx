@@ -10,5 +10,16 @@ namespace Service.External.Ftx.Settings
 
         [YamlProperty("ExternalFtx.ZipkinUrl")]
         public string ZipkinUrl { get; set; }
+
+        [YamlProperty("ExternalFtx.ApiKey")]
+        public string ApiKey { get; set; }
+
+        [YamlProperty("ExternalFtx.ApiSecret")]
+        public string ApiSecret { get; set; }
+
+        [YamlProperty("ExternalFtx.FtxInstrumentsOriginalSymbolToSymbol")]
+        public string FtxInstrumentsOriginalSymbolToSymbol { get; set; }
+
+        
     }
 }

@@ -5,6 +5,7 @@ using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Autofac;
+using MyJetWallet.Domain.ExternalMarketApi;
 using MyJetWallet.Sdk.GrpcMetrics;
 using MyJetWallet.Sdk.GrpcSchema;
 using MyJetWallet.Sdk.Service;
@@ -50,7 +51,8 @@ namespace Service.External.Ftx
 
             app.UseEndpoints(endpoints =>
             {
-                endpoints.MapGrpcSchema<HelloService, IHelloService>();
+                endpoints.MapGrpcSchema<ExternalMarketGrpc, IExternalMarket>();
+                endpoints.MapGrpcSchema<OrderBookSourceGrpc, IOrderBookSource>();
 
                 endpoints.MapGrpcSchemaRegistry();
 
