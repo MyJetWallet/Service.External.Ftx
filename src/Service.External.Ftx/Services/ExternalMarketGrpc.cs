@@ -4,8 +4,6 @@ using System.Linq;
 using System.Threading.Tasks;
 using FtxApi;
 using FtxApi.Enums;
-using Grpc.Core.Logging;
-using JetBrains.Annotations;
 using Microsoft.Extensions.Logging;
 using MyJetWallet.Domain.ExternalMarketApi;
 using MyJetWallet.Domain.ExternalMarketApi.Dto;

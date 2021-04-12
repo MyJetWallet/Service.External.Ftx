@@ -12,7 +12,6 @@
 
   <ItemGroup>
     <ProjectReference Include="..\..\src\Service.External.Ftx.Client\Service.External.Ftx.Client.csproj" />
-    <ProjectReference Include="..\..\src\Service.External.Ftx.Grpc\Service.External.Ftx.Grpc.csproj" />
   </ItemGroup>
 
 </Project>

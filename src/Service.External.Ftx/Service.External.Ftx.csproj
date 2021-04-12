@@ -26,10 +26,6 @@
   </ItemGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\Service.External.Ftx.Grpc\Service.External.Ftx.Grpc.csproj" />
-  </ItemGroup>
-
-  <ItemGroup>
     <None Update="Dockerfile">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </None>

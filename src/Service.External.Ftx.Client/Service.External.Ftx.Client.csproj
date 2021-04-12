@@ -5,11 +5,6 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <ProjectReference PrivateAssets="All" Include="..\Service.External.Ftx.Domain.Models\Service.External.Ftx.Domain.Models.csproj" />
-    <ProjectReference PrivateAssets="All" Include="..\Service.External.Ftx.Grpc\Service.External.Ftx.Grpc.csproj" />
-  </ItemGroup>
-
-  <ItemGroup>
     <PackageReference Include="Autofac" Version="6.1.0" />
     <PackageReference Include="Grpc.Core.Api" Version="2.37.0" />
     <PackageReference Include="JetBrains.Annotations" Version="2021.1.0" />
