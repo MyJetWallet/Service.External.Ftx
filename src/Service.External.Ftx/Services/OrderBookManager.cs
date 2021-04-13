@@ -9,8 +9,6 @@ namespace Service.External.Ftx.Services
 {
     public class OrderBookManager: IDisposable
     {
-        public const string Source = "Simulation-FTX";
-
         private readonly List<string> _symbolList;
 
         private readonly FtxWsOrderBooks _wsFtx;
@@ -52,7 +50,7 @@ namespace Service.External.Ftx.Services
                 Timestamp = data.GetTime().UtcDateTime,
                 Asks = data.asks.Select(LeOrderBookLevel.Create).Where(e => e != null).ToList(),
                 Bids = data.bids.Select(LeOrderBookLevel.Create).Where(e => e != null).ToList(),
-                Source = Source
+                Source = FtxConst.Name
             };
 
             return book;

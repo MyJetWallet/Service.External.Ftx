@@ -15,7 +15,7 @@ namespace Service.External.Ftx.Services
 
         public Task<GetNameResult> GetNameAsync()
         {
-            return Task.FromResult(new GetNameResult() { Name = OrderBookManager.Source });
+            return Task.FromResult(new GetNameResult() { Name = FtxConst.Name });
         }
 
         public Task<GetSymbolResponse> GetSymbolsAsync()
