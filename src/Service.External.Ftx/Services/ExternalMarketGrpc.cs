@@ -94,9 +94,11 @@ namespace Service.External.Ftx.Services
 
                 refId.AddToActivityAsTag("reference-id");
 
+                var size = (decimal)Math.Abs(request.Volume);
+
                 var resp = await _restApi.PlaceOrderAsync(request.Market,
                     request.Side == OrderSide.Buy ? SideType.buy : SideType.sell, 0, FtxApi.Enums.OrderType.market,
-                    (decimal) request.Volume, refId, true);
+                    size, refId, true);
 
                 resp.AddToActivityAsJsonTag("marketOrder-response");
 
@@ -131,6 +133,10 @@ namespace Service.External.Ftx.Services
                         $"Cannot get second order state. Error: {resp.Error}. Request: {JsonConvert.SerializeObject(request)}. Reference: {refId}");
                 }
 
+                size = tradeData.Result.FilledSize ?? 0;
+                if (tradeData.Result.Side == "sell")
+                    size = size * -1;
+
                 var trade = new ExchangeTrade()
                 {
                     Id = (tradeData.Result.Id ?? 0).ToString(CultureInfo.InvariantCulture),
@@ -139,7 +145,7 @@ namespace Service.External.Ftx.Services
                     Price = (double) (tradeData.Result.AvgFillPrice ?? 0),
                     ReferenceId = tradeData.Result.ClientId,
                     Source = FtxConst.Name,
-                    Volume = (double) (tradeData.Result.FilledSize ?? 0),
+                    Volume = (double) size,
                     Timestamp = tradeData.Result.CreatedAt
                 };
 
