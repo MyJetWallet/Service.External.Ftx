@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.Globalization;
 using System.Linq;
 using System.Threading.Tasks;
@@ -21,6 +22,7 @@ namespace Service.External.Ftx.Services
         private readonly FtxRestApi _restApi;
         private readonly BalanceCache _balanceCache;
         private readonly MarketInfoData _marketInfoData;
+        private readonly List<string> _symbolList;
 
         public ExternalMarketGrpc(ILogger<ExternalMarketGrpc> logger, FtxRestApi restApi, BalanceCache balanceCache, MarketInfoData marketInfoData)
         {
@@ -28,6 +30,10 @@ namespace Service.External.Ftx.Services
             _restApi = restApi;
             _balanceCache = balanceCache;
             _marketInfoData = marketInfoData;
+
+            _symbolList = !string.IsNullOrEmpty(Program.Settings.FtxInstrumentsOriginalSymbolToSymbol)
+                ? Program.Settings.FtxInstrumentsOriginalSymbolToSymbol.Split(';').ToList()
+                : new List<string>();
         }
 
         public Task<GetNameResult> GetNameAsync()
@@ -73,7 +79,7 @@ namespace Service.External.Ftx.Services
                 var data = await _marketInfoData.GetMarketInfo();
                 return new GetMarketInfoListResponse()
                 {
-                    Infos = data
+                    Infos = data.Where(e => _symbolList.Contains(e.Market)).ToList()
                 };
             }
             catch (Exception ex)
