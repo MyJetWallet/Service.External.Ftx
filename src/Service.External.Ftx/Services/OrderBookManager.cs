@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Threading.Tasks;
 using Microsoft.Extensions.Logging;
 using MyJetWallet.Connector.Ftx.WebSocket;
 using MyJetWallet.Domain.ExternalMarketApi.Models;
@@ -20,6 +21,11 @@ namespace Service.External.Ftx.Services
                 : new List<string>();
 
             _wsFtx = new FtxWsOrderBooks(loggerFactory.CreateLogger<FtxWsOrderBooks>(), _symbolList.ToArray());
+            _wsFtx.ReceiveUpdates += book =>
+            {
+                //Console.WriteLine($"{book.id} {book.time} {book.bids.Count}|{book.asks.Count}");
+                return Task.CompletedTask;
+            };
         }
 
         public List<string> GetSymbols()

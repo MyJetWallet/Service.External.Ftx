@@ -4,9 +4,11 @@ using System.Threading;
 using System.Threading.Tasks;
 using Autofac;
 using FtxApi;
+using Microsoft.Extensions.Logging;
 using MyJetWallet.Domain.ExternalMarketApi.Dto;
 using MyJetWallet.Domain.ExternalMarketApi.Models;
 using MyJetWallet.Sdk.Service;
+using MyJetWallet.Sdk.Service.Tools;
 
 namespace Service.External.Ftx.Services
 {
@@ -17,8 +19,9 @@ namespace Service.External.Ftx.Services
         private GetBalancesResponse _response = null;
         private DateTime _lastUpdate = DateTime.MinValue;
         private SemaphoreSlim _slim = new SemaphoreSlim(1);
+        
 
-        public BalanceCache(FtxRestApi restApi)
+        public BalanceCache(FtxRestApi restApi, ILogger<BalanceCache> logger)
         {
             _restApi = restApi;
         }
@@ -30,21 +33,7 @@ namespace Service.External.Ftx.Services
             {
                 if (_response == null || (DateTime.UtcNow - _lastUpdate).TotalSeconds > 1)
                 {
-                    var data = await _restApi.GetBalancesAsync();
-
-                    if (data.Success)
-                    {
-                        _response = new GetBalancesResponse()
-                        {
-                            Balances = data.Result.Select(e => new ExchangeBalance()
-                                {Symbol = e.Coin, Balance = e.Total, Free = e.Free}).ToList()
-                        };
-                        _lastUpdate = DateTime.UtcNow;
-                    }
-                    else
-                    {
-                        throw new Exception($"Cannot get balance, error: {data.Error}");
-                    }
+                    await RefreshBalancesAsync();
                 }
 
                 return _response;
@@ -79,6 +68,8 @@ namespace Service.External.Ftx.Services
                 }
 
                 _response.AddToActivityAsJsonTag("balance");
+
+                Console.WriteLine("Balance refreshed");
 
                 return _response;
             }
