@@ -44,39 +44,32 @@ namespace Service.External.Ftx.Services
             }
         }
 
-        public async Task<GetBalancesResponse> RefreshBalancesAsync()
+        private async Task<GetBalancesResponse> RefreshBalancesAsync()
         {
-            await _slim.WaitAsync();
-            try
+            using var activity = MyTelemetry.StartActivity("Load balance info");
+
+            var data = await _restApi.GetBalancesAsync();
+
+            if (data.Success)
             {
-                using var activity = MyTelemetry.StartActivity("Load balance info");
-
-                var data = await _restApi.GetBalancesAsync();
-
-                if (data.Success)
+                _response = new GetBalancesResponse()
                 {
-                    _response = new GetBalancesResponse()
-                    {
-                        Balances = data.Result.Select(e => new ExchangeBalance()
-                            { Symbol = e.Coin, Balance = e.Total, Free = e.Free }).ToList()
-                    };
-                    _lastUpdate = DateTime.UtcNow;
-                }
-                else
-                {
-                    throw new Exception($"Cannot get balance, error: {data.Error}");
-                }
-
-                _response.AddToActivityAsJsonTag("balance");
-
-                Console.WriteLine("Balance refreshed");
-
-                return _response;
+                    Balances = data.Result.Select(e => new ExchangeBalance()
+                        { Symbol = e.Coin, Balance = e.Total, Free = e.Free }).ToList()
+                };
+                _lastUpdate = DateTime.UtcNow;
             }
-            finally
+            else
             {
-                _slim.Release();
+                throw new Exception($"Cannot get balance, error: {data.Error}");
             }
+
+            _response.AddToActivityAsJsonTag("balance");
+
+            Console.WriteLine("Balance refreshed");
+
+            return _response;
+            
         }
 
         public void Start()
