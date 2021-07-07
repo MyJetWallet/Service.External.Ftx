@@ -20,7 +20,7 @@ namespace Service.External.Ftx.Settings
         [YamlProperty("ExternalFtx.ElkLogs")]
         public LogElkSettings ElkLogs { get; set; }
         
-        [YamlProperty("ExternalB2C2.MyNoSqlWriterUrl")]
+        [YamlProperty("ExternalFtx.MyNoSqlWriterUrl")]
         public string MyNoSqlWriterUrl { get; set; }
     }
 }
