@@ -1,8 +1,8 @@
 ﻿using System;
-using System.Collections.Generic;
 using System.Globalization;
 using System.Linq;
 using System.Threading.Tasks;
+using DotNetCoreDecorators;
 using FtxApi;
 using FtxApi.Enums;
 using Microsoft.Extensions.Logging;
@@ -10,35 +10,32 @@ using MyJetWallet.Domain.ExternalMarketApi;
 using MyJetWallet.Domain.ExternalMarketApi.Dto;
 using MyJetWallet.Domain.ExternalMarketApi.Models;
 using MyJetWallet.Domain.Orders;
+using MyJetWallet.Sdk.ExternalMarketsSettings.Settings;
 using MyJetWallet.Sdk.Service;
 using Newtonsoft.Json;
+using OrderType = FtxApi.Enums.OrderType;
 
 namespace Service.External.Ftx.Services
 {
-    public class ExternalMarketGrpc: IExternalMarket
+    public class ExternalMarketGrpc : IExternalMarket
     {
-
         private readonly ILogger<ExternalMarketGrpc> _logger;
         private readonly FtxRestApi _restApi;
         private readonly BalanceCache _balanceCache;
-        private readonly MarketInfoData _marketInfoData;
-        private readonly List<string> _symbolList;
+        private readonly IExternalMarketSettingsAccessor _externalMarketSettingsAccessor;
 
-        public ExternalMarketGrpc(ILogger<ExternalMarketGrpc> logger, FtxRestApi restApi, BalanceCache balanceCache, MarketInfoData marketInfoData)
+        public ExternalMarketGrpc(ILogger<ExternalMarketGrpc> logger, FtxRestApi restApi, BalanceCache balanceCache,
+            IExternalMarketSettingsAccessor externalMarketSettingsAccessor)
         {
             _logger = logger;
             _restApi = restApi;
             _balanceCache = balanceCache;
-            _marketInfoData = marketInfoData;
-
-            _symbolList = !string.IsNullOrEmpty(Program.Settings.FtxInstrumentsOriginalSymbolToSymbol)
-                ? Program.Settings.FtxInstrumentsOriginalSymbolToSymbol.Split(';').ToList()
-                : new List<string>();
+            _externalMarketSettingsAccessor = externalMarketSettingsAccessor;
         }
 
         public Task<GetNameResult> GetNameAsync()
         {
-            return Task.FromResult(new GetNameResult() { Name = FtxConst.Name  });
+            return Task.FromResult(new GetNameResult() {Name = FtxConst.Name});
         }
 
         public async Task<GetBalancesResponse> GetBalancesAsync()
@@ -48,22 +45,35 @@ namespace Service.External.Ftx.Services
                 var balance = await _balanceCache.GetBalancesAsync();
                 return balance;
             }
-            catch(Exception ex)
+            catch (Exception ex)
             {
                 _logger.LogError(ex, "Cannot get FTX balance");
                 throw;
             }
         }
 
-        public async Task<GetMarketInfoResponse> GetMarketInfoAsync(MarketRequest request)
+        public Task<GetMarketInfoResponse> GetMarketInfoAsync(MarketRequest request)
         {
             try
             {
-                var data = await _marketInfoData.GetMarketInfo();
-                return new GetMarketInfoResponse()
+                var data = _externalMarketSettingsAccessor.GetExternalMarketSettings(request.Market);
+                if (data == null)
                 {
-                    Info = data.FirstOrDefault(e => e.Market == request.Market)
-                };
+                    return new GetMarketInfoResponse().AsTask();
+                }
+
+                return new GetMarketInfoResponse
+                {
+                    Info = new ExchangeMarketInfo()
+                    {
+                        Market = data.Market,
+                        BaseAsset = data.BaseAsset,
+                        QuoteAsset = data.QuoteAsset,
+                        MinVolume = data.MinVolume,
+                        PriceAccuracy = data.PriceAccuracy,
+                        VolumeAccuracy = data.VolumeAccuracy
+                    }
+                }.AsTask();
             }
             catch (Exception ex)
             {
@@ -72,15 +82,23 @@ namespace Service.External.Ftx.Services
             }
         }
 
-        public async Task<GetMarketInfoListResponse> GetMarketInfoListAsync()
+        public Task<GetMarketInfoListResponse> GetMarketInfoListAsync()
         {
             try
             {
-                var data = await _marketInfoData.GetMarketInfo();
-                return new GetMarketInfoListResponse()
+                var data = _externalMarketSettingsAccessor.GetExternalMarketSettingsList();
+                return new GetMarketInfoListResponse
                 {
-                    Infos = data.Where(e => _symbolList.Contains(e.Market)).ToList()
-                };
+                    Infos = data.Select(e => new ExchangeMarketInfo()
+                    {
+                        Market = e.Market,
+                        BaseAsset = e.BaseAsset,
+                        QuoteAsset = e.QuoteAsset,
+                        MinVolume = e.MinVolume,
+                        PriceAccuracy = e.PriceAccuracy,
+                        VolumeAccuracy = e.VolumeAccuracy
+                    }).ToList()
+                }.AsTask();
             }
             catch (Exception ex)
             {
@@ -100,10 +118,10 @@ namespace Service.External.Ftx.Services
 
                 refId.AddToActivityAsTag("reference-id");
 
-                var size = (decimal)Math.Abs(request.Volume);
+                var size = (decimal) Math.Abs(request.Volume);
 
                 var resp = await _restApi.PlaceOrderAsync(request.Market,
-                    request.Side == OrderSide.Buy ? SideType.buy : SideType.sell, 0, FtxApi.Enums.OrderType.market,
+                    request.Side == OrderSide.Buy ? SideType.buy : SideType.sell, 0, OrderType.market,
                     size, refId, true);
 
                 resp.AddToActivityAsJsonTag("marketOrder-response");
@@ -114,7 +132,7 @@ namespace Service.External.Ftx.Services
                         $"Cannot place marketOrder. Error: {resp.Error}. Request: {JsonConvert.SerializeObject(request)}. Reference: {refId}");
                 }
 
-                action?.AddTag("is-duplicate", resp.Error != "Duplicate client order ID");
+                action?.AddTag("is-duplicate", resp.Error == "Duplicate client order ID");
 
                 var tradeData = await _restApi.GetOrderStatusByClientIdAsync(refId);
 
@@ -159,18 +177,21 @@ namespace Service.External.Ftx.Services
 
                 if (resp.Error == "Duplicate client order ID")
                 {
-                    _logger.LogInformation("Ftx trade is Duplicate. Request: {requestJson}. Trade: {tradeJson}", JsonConvert.SerializeObject(request), JsonConvert.SerializeObject(trade));
+                    _logger.LogInformation("Ftx trade is Duplicate. Request: {requestJson}. Trade: {tradeJson}",
+                        JsonConvert.SerializeObject(request), JsonConvert.SerializeObject(trade));
                 }
                 else
                 {
-                    _logger.LogInformation("Ftx trade is done. Request: {requestJson}. Trade: {tradeJson}", JsonConvert.SerializeObject(request), JsonConvert.SerializeObject(trade));
+                    _logger.LogInformation("Ftx trade is done. Request: {requestJson}. Trade: {tradeJson}",
+                        JsonConvert.SerializeObject(request), JsonConvert.SerializeObject(trade));
                 }
 
                 return trade;
             }
-            catch(Exception ex)
+            catch (Exception ex)
             {
-                _logger.LogError(ex, "Cannot execute trade. Request: {requestJson}", JsonConvert.SerializeObject(request));
+                _logger.LogError(ex, "Cannot execute trade. Request: {requestJson}",
+                    JsonConvert.SerializeObject(request));
                 throw;
             }
         }
