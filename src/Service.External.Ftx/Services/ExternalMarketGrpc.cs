@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Globalization;
 using System.Linq;
+using System.Text.Json;
 using System.Threading.Tasks;
 using DotNetCoreDecorators;
 using FtxApi;
@@ -13,6 +14,7 @@ using MyJetWallet.Domain.Orders;
 using MyJetWallet.Sdk.ExternalMarketsSettings.Settings;
 using MyJetWallet.Sdk.Service;
 using Newtonsoft.Json;
+using JsonSerializer = System.Text.Json.JsonSerializer;
 using OrderType = FtxApi.Enums.OrderType;
 
 namespace Service.External.Ftx.Services
@@ -87,7 +89,7 @@ namespace Service.External.Ftx.Services
             try
             {
                 var data = _externalMarketSettingsAccessor.GetExternalMarketSettingsList();
-                return new GetMarketInfoListResponse
+                var result =  new GetMarketInfoListResponse
                 {
                     Infos = data.Select(e => new ExchangeMarketInfo()
                     {
@@ -98,7 +100,11 @@ namespace Service.External.Ftx.Services
                         PriceAccuracy = e.PriceAccuracy,
                         VolumeAccuracy = e.VolumeAccuracy
                     }).ToList()
-                }.AsTask();
+                };
+                _logger.LogInformation(JsonSerializer.Serialize(result, new JsonSerializerOptions {WriteIndented = true}));
+                _logger.LogInformation(JsonSerializer.Serialize(result, new JsonSerializerOptions {WriteIndented = true}).AsTask().Result);
+                
+                return result.AsTask();
             }
             catch (Exception ex)
             {
