@@ -101,8 +101,6 @@ namespace Service.External.Ftx.Services
                         VolumeAccuracy = e.VolumeAccuracy
                     }).ToList()
                 };
-                _logger.LogInformation(JsonSerializer.Serialize(result, new JsonSerializerOptions {WriteIndented = true}));
-                _logger.LogInformation(JsonSerializer.Serialize(result, new JsonSerializerOptions {WriteIndented = true}).AsTask().Result);
                 
                 return result.AsTask();
             }
