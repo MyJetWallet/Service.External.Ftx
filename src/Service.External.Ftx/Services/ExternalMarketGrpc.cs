@@ -35,12 +35,12 @@ namespace Service.External.Ftx.Services
             _externalMarketSettingsAccessor = externalMarketSettingsAccessor;
         }
 
-        public Task<GetNameResult> GetNameAsync()
+        public Task<GetNameResult> GetNameAsync(GetNameRequest request)
         {
             return Task.FromResult(new GetNameResult() {Name = FtxConst.Name});
         }
 
-        public async Task<GetBalancesResponse> GetBalancesAsync()
+        public async Task<GetBalancesResponse> GetBalancesAsync(GetBalancesRequest request)
         {
             try
             {
@@ -84,7 +84,7 @@ namespace Service.External.Ftx.Services
             }
         }
 
-        public Task<GetMarketInfoListResponse> GetMarketInfoListAsync()
+        public Task<GetMarketInfoListResponse> GetMarketInfoListAsync(GetMarketInfoListRequest request)
         {
             try
             {
