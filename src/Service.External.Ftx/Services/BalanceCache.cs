@@ -15,6 +15,7 @@ namespace Service.External.Ftx.Services
     public class BalanceCache: IStartable
     {
         private readonly FtxRestApi _restApi;
+        private readonly ILogger<BalanceCache> _logger;
 
         private GetBalancesResponse _response = null;
         private DateTime _lastUpdate = DateTime.MinValue;
@@ -24,6 +25,7 @@ namespace Service.External.Ftx.Services
         public BalanceCache(FtxRestApi restApi, ILogger<BalanceCache> logger)
         {
             _restApi = restApi;
+            _logger = logger;
         }
 
         public async Task<GetBalancesResponse> GetBalancesAsync()
@@ -66,7 +68,7 @@ namespace Service.External.Ftx.Services
 
             _response.AddToActivityAsJsonTag("balance");
 
-            Console.WriteLine("Balance refreshed");
+            _logger.LogDebug("Balance refreshed");
 
             return _response;
             

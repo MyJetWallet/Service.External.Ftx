@@ -5,46 +5,53 @@ using System.Threading.Tasks;
 using Microsoft.Extensions.Logging;
 using MyJetWallet.Connector.Ftx.WebSocket;
 using MyJetWallet.Domain.ExternalMarketApi.Models;
+using MyJetWallet.Sdk.ExternalMarketsSettings.Settings;
 
 namespace Service.External.Ftx.Services
 {
-    public class OrderBookManager: IDisposable
+    public class OrderBookManager : IDisposable
     {
-        private readonly List<string> _symbolList;
-
         private readonly FtxWsOrderBooks _wsFtx;
+        private readonly IExternalMarketSettingsAccessor _externalMarketSettingsAccessor;
 
-        public OrderBookManager(ILoggerFactory loggerFactory)
+        public OrderBookManager(IExternalMarketSettingsAccessor externalMarketSettingsAccessor,
+            ILoggerFactory loggerFactory)
         {
-            _symbolList = !string.IsNullOrEmpty(Program.Settings.FtxInstrumentsOriginalSymbolToSymbol)
-                ? Program.Settings.FtxInstrumentsOriginalSymbolToSymbol.Split(';').ToList()
-                : new List<string>();
+            _externalMarketSettingsAccessor = externalMarketSettingsAccessor;
 
-            _wsFtx = new FtxWsOrderBooks(loggerFactory.CreateLogger<FtxWsOrderBooks>(), _symbolList.ToArray());
-            _wsFtx.ReceiveUpdates += book =>
-            {
-                //Console.WriteLine($"{book.id} {book.time} {book.bids.Count}|{book.asks.Count}");
-                return Task.CompletedTask;
-            };
+            _wsFtx = new FtxWsOrderBooks(loggerFactory.CreateLogger<FtxWsOrderBooks>(),
+                _externalMarketSettingsAccessor.GetExternalMarketSettingsList().Select(e => e.Market).ToArray());
+            _wsFtx.ReceiveUpdates += book => Task.CompletedTask;
         }
 
         public List<string> GetSymbols()
         {
-            return _symbolList.ToList();
+            return _externalMarketSettingsAccessor.GetExternalMarketSettingsList().Select(e => e.Market).ToList();
         }
 
         public bool HasSymbol(string symbol)
         {
-            return _symbolList.Contains(symbol);
+            return _externalMarketSettingsAccessor.GetExternalMarketSettingsList().Find(e => e.Market == symbol) !=
+                   null;
+        }
+
+        public async Task Resubscribe(string symbol)
+        {
+            await _wsFtx.Reset(symbol);
+        }
+
+        public async Task Subscribe(string symbol)
+        {
+            await _wsFtx.Subscribe(symbol);
+        }
+
+        public async Task Unsubscribe(string symbol)
+        {
+            await _wsFtx.Unsubscribe(symbol);
         }
 
         public LeOrderBook GetOrderBook(string symbol)
         {
-            if (!_symbolList.Contains(symbol))
-            {
-                return null;
-            }
-
             var data = _wsFtx.GetOrderBookById(symbol);
 
             if (data == null)

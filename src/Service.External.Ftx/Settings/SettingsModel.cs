@@ -17,10 +17,10 @@ namespace Service.External.Ftx.Settings
         [YamlProperty("ExternalFtx.ApiSecret")]
         public string ApiSecret { get; set; }
 
-        [YamlProperty("ExternalFtx.FtxInstrumentsOriginalSymbolToSymbol")]
-        public string FtxInstrumentsOriginalSymbolToSymbol { get; set; }
-
         [YamlProperty("ExternalFtx.ElkLogs")]
         public LogElkSettings ElkLogs { get; set; }
+        
+        [YamlProperty("ExternalFtx.MyNoSqlWriterUrl")]
+        public string MyNoSqlWriterUrl { get; set; }
     }
 }
