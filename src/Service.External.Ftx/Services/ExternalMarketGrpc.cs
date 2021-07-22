@@ -73,7 +73,10 @@ namespace Service.External.Ftx.Services
                         QuoteAsset = data.QuoteAsset,
                         MinVolume = data.MinVolume,
                         PriceAccuracy = data.PriceAccuracy,
-                        VolumeAccuracy = data.VolumeAccuracy
+                        VolumeAccuracy = data.VolumeAccuracy,
+                        AssociateInstrument = data.AssociateInstrument,
+                        AssociateBaseAsset = data.AssociateBaseAsset,
+                        AssociateQuoteAsset = data.AssociateQuoteAsset
                     }
                 }.AsTask();
             }
@@ -98,7 +101,10 @@ namespace Service.External.Ftx.Services
                         QuoteAsset = e.QuoteAsset,
                         MinVolume = e.MinVolume,
                         PriceAccuracy = e.PriceAccuracy,
-                        VolumeAccuracy = e.VolumeAccuracy
+                        VolumeAccuracy = e.VolumeAccuracy,
+                        AssociateInstrument = e.AssociateInstrument,
+                        AssociateBaseAsset = e.AssociateBaseAsset,
+                        AssociateQuoteAsset = e.AssociateQuoteAsset
                     }).ToList()
                 };
                 
