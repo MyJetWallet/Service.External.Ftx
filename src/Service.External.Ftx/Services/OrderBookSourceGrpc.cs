@@ -13,12 +13,12 @@ namespace Service.External.Ftx.Services
             _manager = manager;
         }
 
-        public Task<GetNameResult> GetNameAsync()
+        public Task<GetNameResult> GetNameAsync(GetOrderBookNameRequest request)
         {
             return Task.FromResult(new GetNameResult() { Name = FtxConst.Name });
         }
 
-        public Task<GetSymbolResponse> GetSymbolsAsync()
+        public Task<GetSymbolResponse> GetSymbolsAsync(GetSymbolsRequest request)
         {
             return Task.FromResult(new GetSymbolResponse() {Symbols = _manager.GetSymbols()});
         }
