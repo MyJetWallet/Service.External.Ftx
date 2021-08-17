@@ -15,7 +15,6 @@ namespace Service.External.Ftx.Services
 {
     public class OrderBookManager : IDisposable
     {
-        public const string ExchangeName = "Ftx";
 
         private readonly FtxWsOrderBooks _wsFtx;
         private readonly IExternalMarketSettingsAccessor _externalMarketSettingsAccessor;
@@ -45,7 +44,7 @@ namespace Service.External.Ftx.Services
             {
                 var price = new BidAsk
                 {
-                    LiquidityProvider = ExchangeName,
+                    LiquidityProvider = FtxConst.Name,
                     DateTime = book.GetTime().DateTime,
                     Id = book.id,
                     Ask = book.asks?.Min(e => e.GetFtxOrderBookPrice()) ?? 0,
