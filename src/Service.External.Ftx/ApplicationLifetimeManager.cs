@@ -1,6 +1,7 @@
 ﻿using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
 using MyJetWallet.Sdk.Service;
+using MyServiceBus.TcpClient;
 using Service.External.Ftx.Services;
 
 namespace Service.External.Ftx
@@ -9,18 +10,21 @@ namespace Service.External.Ftx
     {
         private readonly ILogger<ApplicationLifetimeManager> _logger;
         private readonly OrderBookManager _bookManager;
+        private readonly MyServiceBusTcpClient _serviceBusTcpClient;
 
-        public ApplicationLifetimeManager(IHostApplicationLifetime appLifetime, ILogger<ApplicationLifetimeManager> logger, OrderBookManager bookManager)
+        public ApplicationLifetimeManager(IHostApplicationLifetime appLifetime, ILogger<ApplicationLifetimeManager> logger, OrderBookManager bookManager, MyServiceBusTcpClient serviceBusTcpClient)
             : base(appLifetime)
         {
             _logger = logger;
             _bookManager = bookManager;
+            _serviceBusTcpClient = serviceBusTcpClient;
         }
 
         protected override void OnStarted()
         {
             _logger.LogInformation("OnStarted has been called.");
             _bookManager.Start();
+            _serviceBusTcpClient.Start();
         }
 
         protected override void OnStopping()

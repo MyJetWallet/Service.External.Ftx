@@ -1,9 +1,12 @@
 ﻿using Autofac;
 using FtxApi;
 using MyJetWallet.Connector.Ftx.Rest;
+using MyJetWallet.Domain.Prices;
 using MyJetWallet.Sdk.ExternalMarketsSettings.NoSql;
 using MyJetWallet.Sdk.ExternalMarketsSettings.Services;
 using MyJetWallet.Sdk.ExternalMarketsSettings.Settings;
+using MyJetWallet.Sdk.Service;
+using MyJetWallet.Sdk.ServiceBus;
 using MyNoSqlServer.Abstractions;
 using MyNoSqlServer.DataWriter;
 using Service.External.Ftx.Services;
@@ -30,6 +33,10 @@ namespace Service.External.Ftx.Modules
 
 
             RegisterMyNoSqlWriter<ExternalMarketSettingsNoSql>(builder, ExternalMarketSettingsNoSql.TableName);
+
+            var serviceBusClient = builder.RegisterMyServiceBusTcpClient(() => Program.Settings.ServiceBusHostPort, ApplicationEnvironment.HostName, Program.LogFactory);
+
+            builder.RegisterMyServiceBusPublisher<BidAsk>(serviceBusClient, "jetwallet-external-prices", false);
         }
 
         private void RegisterMyNoSqlWriter<TEntity>(ContainerBuilder builder, string table)

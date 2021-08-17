@@ -22,5 +22,8 @@ namespace Service.External.Ftx.Settings
         
         [YamlProperty("ExternalFtx.MyNoSqlWriterUrl")]
         public string MyNoSqlWriterUrl { get; set; }
+
+        [YamlProperty("ExternalFtx.ServiceBusHostPort")]
+        public string ServiceBusHostPort { get; set; }
     }
 }
