@@ -31,7 +31,7 @@ namespace Service.External.Ftx.Services
 
             _wsFtx = new FtxWsOrderBooks(loggerFactory.CreateLogger<FtxWsOrderBooks>(), _externalMarketSettingsAccessor.GetExternalMarketSettingsList().Select(e => e.Market).ToArray());
             
-            _timer = new MyTaskTimer(nameof(OrderBookManager), TimeSpan.FromSeconds(1), loggerFactory.CreateLogger<OrderBookManager>(), DoTime);
+            _timer = new MyTaskTimer(nameof(OrderBookManager), TimeSpan.FromMilliseconds(500), loggerFactory.CreateLogger<OrderBookManager>(), DoTime);
         }
 
         private async Task DoTime()
