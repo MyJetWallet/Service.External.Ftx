@@ -5,6 +5,7 @@ using MyJetWallet.Domain.Prices;
 using MyJetWallet.Sdk.ExternalMarketsSettings.NoSql;
 using MyJetWallet.Sdk.ExternalMarketsSettings.Services;
 using MyJetWallet.Sdk.ExternalMarketsSettings.Settings;
+using MyJetWallet.Sdk.NoSql;
 using MyJetWallet.Sdk.Service;
 using MyJetWallet.Sdk.ServiceBus;
 using MyNoSqlServer.Abstractions;
@@ -31,22 +32,11 @@ namespace Service.External.Ftx.Modules
                 .AsSelf()
                 .SingleInstance();
 
+            builder.RegisterMyNoSqlWriter<ExternalMarketSettingsNoSql>(Program.ReloadedSettings(e => e.MyNoSqlWriterUrl), ExternalMarketSettingsNoSql.TableName, true);
 
-            RegisterMyNoSqlWriter<ExternalMarketSettingsNoSql>(builder, ExternalMarketSettingsNoSql.TableName);
-
-            var serviceBusClient = builder.RegisterMyServiceBusTcpClient(() => Program.Settings.ServiceBusHostPort, ApplicationEnvironment.HostName, Program.LogFactory);
+            var serviceBusClient = builder.RegisterMyServiceBusTcpClient(() => Program.Settings.ServiceBusHostPort, Program.LogFactory);
 
             builder.RegisterMyServiceBusPublisher<BidAsk>(serviceBusClient, "jetwallet-external-prices", false);
-        }
-
-        private void RegisterMyNoSqlWriter<TEntity>(ContainerBuilder builder, string table)
-            where TEntity : IMyNoSqlDbEntity, new()
-        {
-            builder.Register(ctx =>
-                    new MyNoSqlServerDataWriter<TEntity>(
-                        Program.ReloadedSettings(e => e.MyNoSqlWriterUrl), table, true))
-                .As<IMyNoSqlServerDataWriter<TEntity>>()
-                .SingleInstance();
         }
     }
 }

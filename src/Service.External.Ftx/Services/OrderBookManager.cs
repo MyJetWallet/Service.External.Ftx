@@ -10,6 +10,7 @@ using MyJetWallet.Domain.ExternalMarketApi.Models;
 using MyJetWallet.Domain.Prices;
 using MyJetWallet.Sdk.ExternalMarketsSettings.Settings;
 using MyJetWallet.Sdk.Service.Tools;
+using MyJetWallet.Sdk.ServiceBus;
 
 namespace Service.External.Ftx.Services
 {
@@ -18,13 +19,13 @@ namespace Service.External.Ftx.Services
 
         private readonly FtxWsOrderBooks _wsFtx;
         private readonly IExternalMarketSettingsAccessor _externalMarketSettingsAccessor;
-        private readonly IPublisher<BidAsk> _publisher;
+        private readonly IServiceBusPublisher<BidAsk> _publisher;
 
         private Dictionary<string, BidAsk> _updated = new Dictionary<string, BidAsk>();
         private MyTaskTimer _timer;
 
         public OrderBookManager(IExternalMarketSettingsAccessor externalMarketSettingsAccessor,
-            ILoggerFactory loggerFactory, IPublisher<BidAsk> publisher)
+            ILoggerFactory loggerFactory, IServiceBusPublisher<BidAsk> publisher)
         {
             _externalMarketSettingsAccessor = externalMarketSettingsAccessor;
             _publisher = publisher;
@@ -57,13 +58,7 @@ namespace Service.External.Ftx.Services
                 }
             }
 
-            var taskList = new List<Task>();
-            foreach (var price in prices)
-            {
-                taskList.Add(_publisher.PublishAsync(price).AsTask());
-            }
-
-            await Task.WhenAll(taskList);
+            await _publisher.PublishAsync(prices);
         }
 
         public List<string> GetSymbols()
