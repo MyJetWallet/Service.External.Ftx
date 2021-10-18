@@ -1,7 +1,7 @@
 ﻿using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
 using MyJetWallet.Sdk.Service;
-using MyServiceBus.TcpClient;
+using MyJetWallet.Sdk.ServiceBus;
 using Service.External.Ftx.Services;
 
 namespace Service.External.Ftx
@@ -10,9 +10,9 @@ namespace Service.External.Ftx
     {
         private readonly ILogger<ApplicationLifetimeManager> _logger;
         private readonly OrderBookManager _bookManager;
-        private readonly MyServiceBusTcpClient _serviceBusTcpClient;
+        private readonly ServiceBusLifeTime _serviceBusTcpClient;
 
-        public ApplicationLifetimeManager(IHostApplicationLifetime appLifetime, ILogger<ApplicationLifetimeManager> logger, OrderBookManager bookManager, MyServiceBusTcpClient serviceBusTcpClient)
+        public ApplicationLifetimeManager(IHostApplicationLifetime appLifetime, ILogger<ApplicationLifetimeManager> logger, OrderBookManager bookManager, ServiceBusLifeTime serviceBusTcpClient)
             : base(appLifetime)
         {
             _logger = logger;
