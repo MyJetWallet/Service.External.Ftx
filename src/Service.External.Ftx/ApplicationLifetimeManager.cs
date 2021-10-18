@@ -23,14 +23,16 @@ namespace Service.External.Ftx
         protected override void OnStarted()
         {
             _logger.LogInformation("OnStarted has been called.");
-            _bookManager.Start();
             _serviceBusTcpClient.Start();
+            _bookManager.Start();
+
         }
 
         protected override void OnStopping()
         {
             _logger.LogInformation("OnStopping has been called.");
             _bookManager.Stop();
+            _serviceBusTcpClient.Stop();
         }
 
         protected override void OnStopped()
