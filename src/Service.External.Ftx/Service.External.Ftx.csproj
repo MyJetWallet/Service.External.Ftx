@@ -1,7 +1,7 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk.Web">
 
   <PropertyGroup>
-    <TargetFramework>net5.0</TargetFramework>
+    <TargetFramework>net6.0</TargetFramework>
     <UserSecretsId>ae5a1652-1de4-49b4-b589-0243297e3069</UserSecretsId>
     <LangVersion>8.0</LangVersion>
   </PropertyGroup>
@@ -15,11 +15,11 @@
     <PackageReference Include="MyJetWallet.Connector.Ftx" Version="1.2.4" />
     <PackageReference Include="MyJetWallet.Domain.ExternalMarketApi" Version="1.1.6" />
     <PackageReference Include="MyJetWallet.Sdk.ExternalMarketsSettings" Version="1.0.3" />
-    <PackageReference Include="MyJetWallet.Sdk.GrpcMetrics" Version="2.0.3" />
+    <PackageReference Include="MyJetWallet.Sdk.GrpcMetrics" Version="2.0.4" />
     <PackageReference Include="MyJetWallet.Sdk.GrpcSchema" Version="1.0.6" />
-    <PackageReference Include="MyJetWallet.Sdk.NoSql" Version="1.4.0" />
-    <PackageReference Include="MyJetWallet.Sdk.Service" Version="1.6.11" />
-    <PackageReference Include="MyJetWallet.Sdk.ServiceBus" Version="2.0.0" />
+    <PackageReference Include="MyJetWallet.Sdk.NoSql" Version="2.0.1" />
+    <PackageReference Include="MyJetWallet.Sdk.Service" Version="2.0.2" />
+    <PackageReference Include="MyJetWallet.Sdk.ServiceBus" Version="2.0.2" />
     <PackageReference Include="Newtonsoft.Json" Version="13.0.1" />
     <PackageReference Include="prometheus-net.AspNetCore" Version="5.0.1" />
     <PackageReference Include="protobuf-net.Grpc.AspNetCore" Version="1.0.152" />

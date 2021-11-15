@@ -15,7 +15,7 @@ jobs:
     - name: Setup .NET Core
       uses: actions/setup-dotnet@v1
       with:
-        dotnet-version: 5.0.101
+        dotnet-version: 6.0.*
 
     - name: Get current time
       uses: MyJetTools/get-current-time@v2
@@ -61,7 +61,7 @@ jobs:
         build_args: app_version=myjetwallet.service.external.ftx-test:latest,app_compilation_date=${{ steps.current-time.outputs.formattedTime }}
 
   restart:
-    runs-on: ubuntu-latest    
+    runs-on: self-hosted
     needs: build
     steps:
     - name: Restart service
