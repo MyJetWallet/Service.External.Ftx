@@ -50,28 +50,41 @@ namespace Service.External.Ftx.Services
         {
             using var activity = MyTelemetry.StartActivity("Load balance info");
 
-            var data = await _restApi.GetBalancesAsync();
-
-            if (data.Success)
+            try
             {
-                _response = new GetBalancesResponse()
+                var data = await _restApi.GetBalancesAsync();
+
+                if (data.Success)
                 {
-                    Balances = data.Result.Select(e => new ExchangeBalance()
-                        { Symbol = e.Coin, Balance = e.Total, Free = e.Free }).ToList()
-                };
-                _lastUpdate = DateTime.UtcNow;
+                    _response = new GetBalancesResponse()
+                    {
+                        Balances = data.Result.Select(e => new ExchangeBalance()
+                            {Symbol = e.Coin, Balance = e.Total, Free = e.Free}).ToList()
+                    };
+                    _lastUpdate = DateTime.UtcNow;
+                }
+                else
+                {
+                    throw new Exception($"Cannot get balance, error: {data.Error}");
+                }
+
+                _response.AddToActivityAsJsonTag("balance");
+
+                _logger.LogDebug("Balance refreshed");
+
+                return _response;
             }
-            else
+            catch (Exception ex)
             {
-                throw new Exception($"Cannot get balance, error: {data.Error}");
+                ex.WriteToActivity();
+                if ((DateTime.UtcNow - _lastUpdate).TotalMinutes < 10 && _response != null)
+                {
+                    _logger.LogWarning(ex, "Cannot update balances. will take last value from cache");
+                    return _response;
+                }
+
+                throw;
             }
-
-            _response.AddToActivityAsJsonTag("balance");
-
-            _logger.LogDebug("Balance refreshed");
-
-            return _response;
-            
         }
 
         public void Start()
