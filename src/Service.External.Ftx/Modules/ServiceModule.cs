@@ -18,7 +18,8 @@ namespace Service.External.Ftx.Modules
     {
         protected override void Load(ContainerBuilder builder)
         {
-            FtxRestApi ftxRestClient = FtxRestApiFactory.CreateClient(Program.Settings.ApiKey, Program.Settings.ApiSecret);
+            var ftxRestClient = FtxRestApiFactory.CreateClient(Program.Settings.ApiKey, Program.Settings.ApiSecret,
+                Program.Settings.SubAccount);
             builder.RegisterInstance(ftxRestClient).AsSelf().SingleInstance();
 
             builder.RegisterType<BalanceCache>().As<IStartable>().AutoActivate().AsSelf().SingleInstance();

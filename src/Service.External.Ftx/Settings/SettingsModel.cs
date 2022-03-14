@@ -25,5 +25,8 @@ namespace Service.External.Ftx.Settings
 
         [YamlProperty("ExternalFtx.ServiceBusHostPort")]
         public string ServiceBusHostPort { get; set; }
+        
+        [YamlProperty("ExternalFtx.SubAccount")]
+        public string SubAccount { get; set; }
     }
 }
