@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.Globalization;
 using System.Linq;
 using System.Text.Json;
@@ -171,7 +172,18 @@ namespace Service.External.Ftx.Services
                 if (tradeData.Result.Side == "sell")
                     size = size * -1;
 
-                var trade = new ExchangeTrade()
+                var (feeSymbol, feeVolume) = ("", 0d);
+                
+                if (tradeData.Result?.Id == null)
+                {
+                    _logger.LogWarning("Cannot get fills. OrderId in TradeData is null: {@tradeData}", tradeData);
+                }
+                else
+                {
+                    (feeSymbol, feeVolume) = await GetFeeInfoAsync(tradeData.Result.Id.Value);
+                }
+
+                var trade = new ExchangeTrade
                 {
                     Id = (tradeData.Result.Id ?? 0).ToString(CultureInfo.InvariantCulture),
                     Market = tradeData.Result.Market,
@@ -180,7 +192,9 @@ namespace Service.External.Ftx.Services
                     ReferenceId = tradeData.Result.ClientId,
                     Source = FtxConst.Name,
                     Volume = (double) size,
-                    Timestamp = tradeData.Result.CreatedAt
+                    Timestamp = tradeData.Result.CreatedAt,
+                    FeeSymbol = feeSymbol,
+                    FeeVolume = feeVolume
                 };
 
                 trade.AddToActivityAsJsonTag("response");
@@ -203,6 +217,29 @@ namespace Service.External.Ftx.Services
                 _logger.LogError(ex, "Cannot execute trade. Request: {requestJson}",
                     JsonConvert.SerializeObject(request));
                 throw;
+            }
+        }
+
+        private async Task<(string FeeSymbol, double FeeVolume)> GetFeeInfoAsync(decimal orderId)
+        {
+            try
+            {
+                var fillsResult = await _restApi.GetFillsAsync(orderId);
+
+                if (!fillsResult.Success)
+                {
+                    _logger.LogWarning("Cannot get fills. Error: {@error}. Response: {@response}", fillsResult.Error, fillsResult);
+                }
+
+                var feeSymbol = fillsResult.Result?.FirstOrDefault()?.FeeCurrency ?? "";
+                var feeVolume = Convert.ToDouble(fillsResult.Result?.Sum(f => f.Fee) ?? 0);
+
+                return (feeSymbol, feeVolume);
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Failed to GetFeeInfo for {@orderId}", orderId);
+                return ("", 0);
             }
         }
     }
