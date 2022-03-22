@@ -22,13 +22,11 @@ namespace Service.External.Ftx.Modules
                 Program.Settings.SubAccount);
             builder.RegisterInstance(ftxRestClient).AsSelf().SingleInstance();
 
-            builder.RegisterType<BalanceCache>().As<IStartable>().AutoActivate().AsSelf().SingleInstance();
             builder.RegisterType<OrderBookManager>().AsSelf().SingleInstance();
 
             builder
                 .RegisterType<ExternalMarketSettingsManager>()
                 .WithParameter("name", FtxConst.Name)
-                .As<IExternalMarketSettingsManager>()
                 .As<IExternalMarketSettingsAccessor>()
                 .AsSelf()
                 .SingleInstance();

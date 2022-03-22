@@ -10,14 +10,12 @@ namespace Service.External.Ftx.GrpcServices
     public class ExternalMarketSettingsManagerGrpc : IExternalMarketSettingsManagerGrpc
     {
         private readonly IExternalMarketSettingsAccessor _accessor;
-        private readonly IExternalMarketSettingsManager _manager;
         private readonly OrderBookManager _orderBookManager;
 
-        public ExternalMarketSettingsManagerGrpc(IExternalMarketSettingsAccessor accessor,
-            IExternalMarketSettingsManager manager, OrderBookManager orderBookManager)
+        public ExternalMarketSettingsManagerGrpc(IExternalMarketSettingsAccessor accessor, 
+            OrderBookManager orderBookManager)
         {
             _accessor = accessor;
-            _manager = manager;
             _orderBookManager = orderBookManager;
         }
 
@@ -33,19 +31,16 @@ namespace Service.External.Ftx.GrpcServices
 
         public Task AddExternalMarketSettings(ExternalMarketSettings settings)
         {
-            _manager.AddExternalMarketSettings(settings);
             return _orderBookManager.Subscribe(settings.Market);
         }
 
         public Task UpdateExternalMarketSettings(ExternalMarketSettings settings)
         {
-            _manager.UpdateExternalMarketSettings(settings);
             return _orderBookManager.Resubscribe(settings.Market);
         }
 
         public Task RemoveExternalMarketSettings(RemoveMarketRequest request)
         {
-            _manager.RemoveExternalMarketSettings(request.Symbol);
             return _orderBookManager.Unsubscribe(request.Symbol);
         }
     }

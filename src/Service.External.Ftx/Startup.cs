@@ -48,7 +48,6 @@ namespace Service.External.Ftx
 
             app.UseEndpoints(endpoints =>
             {
-                endpoints.MapGrpcSchema<ExternalMarketGrpc, IExternalMarket>();
                 endpoints.MapGrpcSchema<OrderBookSourceGrpc, IOrderBookSource>();
                 endpoints.MapGrpcSchema<ExternalMarketSettingsManagerGrpc, IExternalMarketSettingsManagerGrpc>();
 
