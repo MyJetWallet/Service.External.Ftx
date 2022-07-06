@@ -10,6 +10,7 @@ namespace TestApp
         {
             await Task.Delay(1000);
             GrpcClientFactory.AllowUnencryptedHttp2 = true;
+            
 
             Console.Write("Press enter to start");
             Console.ReadLine();
